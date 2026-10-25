@@ -1,0 +1,17 @@
+[Unit]
+Description=Autopilot Monitor
+[Service]
+WorkingDirectory=/home/xizesse/piobc
+User=xizesse
+ExecStart=/home/xizesse/piobc/.venv/bin/python /home/xizesse/piobc/src/monitor.py
+Environment=PYTHONUNBUFFERED=1
+Restart=always
+[Install]
+WantedBy=multi-user.target
+
+
+
+
+
+
+

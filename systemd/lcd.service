@@ -1,0 +1,19 @@
+[Unit]
+Description=LCD service             
+[Service]
+WorkingDirectory=/home/xizesse/piobc
+User=xizesse
+ExecStart=/home/xizesse/piobc/.venv/bin/python /home/xizesse/piobc/src/lcd.py
+Environment=PYTHONUNBUFFERED=1
+Restart=always   
+[Install]
+WantedBy=multi-user.target
+
+
+
+
+
+
+
+
+
