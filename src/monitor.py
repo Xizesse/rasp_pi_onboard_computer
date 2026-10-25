@@ -37,31 +37,61 @@ class HeartbeatMonitor:
             return LinkState.OK
 
 
+def hms(seconds):
+    h, rem = divmod(int(seconds), 3600)
+    m, s = divmod(rem, 60)
+    return f"{h:02d}:{m:02d}:{s:02d}"
+
+def lcd_text(state, mode, volts, silence):
+    line1 = f"{state.value} {mode or '?'}"
+    v = f"{volts:.1f}V" if volts is not None else "?V"
+    if silence is None:
+        line2 = f"{v} --:--:--"
+    elif state == LinkState.OK:
+        line2 = v
+    else:
+        line2 = f"{v} {hms(silence)}"
+    return f"{line1}\n{line2}"
+
 def main():
     conn = mavutil.mavlink_connection('udpin:0.0.0.0:14550')
     monitor = HeartbeatMonitor(degraded_after=2, lost_after=10)
     lcd_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     last_state = None
+    last_mode = None
+
+    mode = None        # latest values from the autopilot
+    volts = None
+    remaining = None
 
     while True:
-        msg = conn.recv_match(type='HEARTBEAT', blocking=True, timeout=1)
+        msg = conn.recv_match(type=['HEARTBEAT', 'SYS_STATUS'],
+                              blocking=True, timeout=1)
         now = time.monotonic()
 
         if (msg is not None
                 and msg.get_srcSystem() == AUTOPILOT_SYSID
                 and msg.get_srcComponent() == AUTOPILOT_COMPID):
-            monitor.on_heartbeat(now)
+            mtype = msg.get_type()
+            if mtype == 'HEARTBEAT':
+                monitor.on_heartbeat(now)
+                mode = mavutil.mode_string_v10(msg)   # custom_mode -> "MANUAL", "HOLD", ...
+            elif mtype == 'SYS_STATUS':
+                # 65535 / -1 mean "unknown" in MAVLink
+                if msg.voltage_battery != 65535:
+                    volts = msg.voltage_battery / 1000.0   # mV -> V
+                remaining = msg.battery_remaining if msg.battery_remaining >= 0 else None
 
         state = monitor.update(now)
         if state != last_state:
             print(f"LINK {state.value}")
             last_state = state
+        if mode != last_mode:
+            print(f"MODE {mode}")
+            last_mode = mode
 
         # every loop (~1 Hz): tell the LCD what to show
-        if monitor.silence is None:
-            text = f"AP: {state.value}\nno HB yet"
-        else:
-            text = f"AP: {state.value}\nsilent {monitor.silence:.0f}s"
+        text = lcd_text(state, mode, volts, monitor.silence)       
         lcd_sock.sendto(text.encode(), LCD_ADDR)
 
 
