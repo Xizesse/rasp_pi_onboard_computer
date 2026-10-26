@@ -51,7 +51,7 @@ def lcd_text(state, mode, volts, silence):
         line2 = v
     else:
         line2 = f"{v} {hms(silence)}"
-    return f"{line1}\n{line2} v1.02"
+    return f"{line1}\n{line2} v1.03"
 
 def main():
     conn = mavutil.mavlink_connection('udpin:0.0.0.0:14550', source_system=200, source_component=191) 
