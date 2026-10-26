@@ -54,11 +54,12 @@ def lcd_text(state, mode, volts, silence):
     return f"{line1}\n{line2}"
 
 def main():
-    conn = mavutil.mavlink_connection('udpin:0.0.0.0:14550')
+    conn = mavutil.mavlink_connection('udpin:0.0.0.0:14550', source_system=200, source_component=191) 
     monitor = HeartbeatMonitor(degraded_after=2, lost_after=10)
     lcd_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     last_state = None
     last_mode = None
+    last_hb_sent = 0.0
 
     mode = None        # latest values from the autopilot
     volts = None
@@ -68,6 +69,16 @@ def main():
         msg = conn.recv_match(type=['HEARTBEAT', 'SYS_STATUS'],
                               blocking=True, timeout=1)
         now = time.monotonic()
+	
+
+	# new: companion heartbeat to the autopilot, 1 Hz
+        if now - last_hb_sent >= 1.0:
+            conn.mav.heartbeat_send(
+                mavutil.mavlink.MAV_TYPE_ONBOARD_CONTROLLER,
+                mavutil.mavlink.MAV_AUTOPILOT_INVALID,
+                0, 0,
+                mavutil.mavlink.MAV_STATE_ACTIVE)
+            last_hb_sent = now
 
         if (msg is not None
                 and msg.get_srcSystem() == AUTOPILOT_SYSID

@@ -1,0 +1,11 @@
+BATT_LOW_VOLT    10.5
+BATT_CRT_VOLT    9.9
+BATT_LOW_TIMER   5
+BATT_FS_LOW_ACT  1     # 1 = RTL
+BATT_FS_CRT_ACT  2     # 2 = Hold
+
+# Onboard computer loss (Pi = GCS, sysid 200)
+MAV_GCS_SYSID   200
+FS_GCS_ENABLE   1
+FS_TIMEOUT      5      # shared with the RC failsafe
+FS_ACTION       2      # 2 = Hold
