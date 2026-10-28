@@ -2,7 +2,7 @@
 
 A small learning prototype of an onboard computer for an autonomous boat. A Raspberry Pi talks MAVLink to a simulated ArduPilot boat (SITL on my laptop), shows the link status on an LCD, and runs as systemd services. I also experimented with failsafe tests and a simple release process.
 
-![LCD](docs/lcd.jpg)
+![LCD](docs/1793225213876.jpg)
 
 ## What it does
 
@@ -12,6 +12,6 @@ A small learning prototype of an onboard computer for an autonomous boat. A Rasp
 - **Tests:** three pytest tests against SITL: parameters match `config/boat.param`, low battery → RTL, monitor stopped → HOLD.
 - **Releases:** each version is a git tag. A timer on the Pi installs new tags into their own folder and switches a `current` symlink; rolling back means pointing it at the old one.
 
-![systemd](docs/systemctl.png)
-![tests](docs/pytest.png)
-![SITL](docs/sitl.png)
+![systemd](docs/Screenshot%20from%202026-10-28%2022-03-02.png)
+![tests](docs/Screenshot%20from%202026-10-28%2022-06-26.png)
+![SITL](docs/Screenshot%20from%202026-10-28%2022-05-42.png)
