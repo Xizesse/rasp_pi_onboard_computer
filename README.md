@@ -1,10 +1,17 @@
-# piobc
+# piobc: Raspberry Pi onboard computer (prototype)
 
-Raspberry Pi onboard computer for a simulated USV. Monitors an ArduPilot
-autopilot over MAVLink (heartbeat timeout: OK / DEGRADED / LOST) and shows
-link state on a 16x2 LCD. Services run under systemd.
+A small learning prototype of an onboard computer for an autonomous boat. A Raspberry Pi talks MAVLink to a simulated ArduPilot boat (SITL on my laptop), shows the link status on an LCD, and runs as systemd services. I also experimented with failsafe tests and a simple release process.
 
-## Run
-python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
-.venv/bin/python src/monitor.py
-.venv/bin/python src/lcd.py
+![LCD](docs/lcd.jpg)
+
+## What it does
+
+- **Monitor:** listens to the autopilot heartbeat and shows OK / DEGRADED / LOST, mode, battery and version on a 16x2 LCD.
+- **systemd:** the monitor and the LCD run as two services that restart if they crash and start at boot.
+- **Failsafes:** the Pi sends its own heartbeat; if it stops, the autopilot switches to HOLD. Low battery switches to RTL.
+- **Tests:** three pytest tests against SITL: parameters match `config/boat.param`, low battery → RTL, monitor stopped → HOLD.
+- **Releases:** each version is a git tag. A timer on the Pi installs new tags into their own folder and switches a `current` symlink; rolling back means pointing it at the old one.
+
+![systemd](docs/systemctl.png)
+![tests](docs/pytest.png)
+![SITL](docs/sitl.png)
